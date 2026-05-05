@@ -24,3 +24,40 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* SVG World Map injects #svg-world-map-container; fill the React mount region */
+.world-map-mount #svg-world-map-container {
+  position: absolute;
+  inset: 0;
+}
+
+.map-viewport {
+  touch-action: none;
+}
+
+@keyframes success-burst-float {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.72) rotate(-4deg);
+  }
+  16% {
+    opacity: 1;
+    transform: translate3d(0, -6px, 0) scale(1.2) rotate(2deg);
+  }
+  58% {
+    opacity: 0.9;
+    transform: translate3d(10px, -34px, 0) scale(1) rotate(6deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(18px, -58px, 0) scale(0.82) rotate(10deg);
+  }
+}
+
+.success-burst-float {
+  animation: success-burst-float 900ms ease-out forwards;
+}
+
+.success-burst-score {
+  animation: success-burst-float 850ms ease-out forwards;
+}
