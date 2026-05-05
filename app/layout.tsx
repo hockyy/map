@@ -13,9 +13,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Find the country — world map quiz",
+  title: {
+    default: "Click Map - World Region Quiz",
+    template: "%s | Click Map",
+  },
   description:
-    "Full-screen map quiz: click a country, then pick its name from a searchable list. Three lives, thirty minutes. Uses SVG-World-Map.",
+    "A fast full-screen world map quiz. Name highlighted regions, pan and zoom the SVG map, and share your final score.",
+  applicationName: "Click Map",
+  keywords: ["map quiz", "world map", "geography game", "region quiz"],
+  openGraph: {
+    title: "Click Map - World Region Quiz",
+    description:
+      "Name highlighted regions on a full-screen interactive world map.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Click Map - World Region Quiz",
+    description:
+      "Name highlighted regions on a full-screen interactive world map.",
+  },
 };
 
 export default function RootLayout({

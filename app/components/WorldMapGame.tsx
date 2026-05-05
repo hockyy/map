@@ -1,5 +1,6 @@
 "use client";
 
+import * as CountryFlags from "country-flag-icons/react/3x2";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const GAME_DURATION_SEC = 30 * 60;
@@ -10,6 +11,7 @@ const SCRIPT_SRC = "/svg-world-map/svg-world-map.js";
 const HIGHLIGHT = "#475569";
 const HOVER_HIGHLIGHT = "#64748b";
 const GUESSED_HIGHLIGHT = "#16a34a";
+const WRONG_HIGHLIGHT = "#dc2626";
 
 const MIN_SCALE = 0.35;
 const MAX_SCALE = 6;
@@ -30,6 +32,7 @@ type RegionArrow = {
   y: number;
   label: string;
 };
+type GameOverReason = "time" | "win" | "surrender";
 type RegionTargetId =
   | "all"
   | "AS"
@@ -937,6 +940,7 @@ export function WorldMapGame() {
   const transformLayerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const guessedRef = useRef<Set<string>>(new Set());
+  const wrongIdsRef = useRef<Set<string>>(new Set());
   const panSessionRef = useRef<PanSession | null>(null);
   const suppressClickRef = useRef(false);
   const hoveredIsoRef = useRef<string | null>(null);
@@ -953,9 +957,7 @@ export function WorldMapGame() {
   const [penalties, setPenalties] = useState(0);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION_SEC);
-  const [gameOverReason, setGameOverReason] = useState<"time" | "win" | null>(
-    null,
-  );
+  const [gameOverReason, setGameOverReason] = useState<GameOverReason | null>(null);
   const [guessed, setGuessed] = useState<Set<string>>(() => new Set());
   const [mapApi, setMapApi] = useState<SvgWorldMapApi | null>(null);
   const [clickedIso, setClickedIso] = useState<string | null>(null);
@@ -1045,12 +1047,24 @@ export function WorldMapGame() {
     guessedRef.current.forEach((iso) => {
       updates[iso] = GUESSED_HIGHLIGHT;
     });
+    wrongIdsRef.current.forEach((iso) => {
+      if (!guessedRef.current.has(iso)) {
+        updates[iso] = WRONG_HIGHLIGHT;
+      }
+    });
     const hoverIso = hoveredIsoRef.current;
     if (hoverIso && hoverIso !== selectedIso && !guessedRef.current.has(hoverIso)) {
       updates[hoverIso] = HOVER_HIGHLIGHT;
     }
     if (selectedIso) {
       updates[selectedIso] = HIGHLIGHT;
+    }
+    if (
+      selectedIso &&
+      wrongIdsRef.current.has(selectedIso) &&
+      !guessedRef.current.has(selectedIso)
+    ) {
+      updates[selectedIso] = WRONG_HIGHLIGHT;
     }
     if (Object.keys(updates).length > 0) {
       map.update(updates);
@@ -1088,11 +1102,13 @@ export function WorldMapGame() {
     debugMapFlow("selected-country", selectedCountryDebug ?? { iso: null });
   }, [selectedCountryDebug]);
 
-  const endGame = useCallback((reason: "time" | "win") => {
+  const endGame = useCallback((reason: GameOverReason) => {
     gameStateRef.current.playing = false;
     gameStateRef.current.ended = true;
     setGameOverReason(reason);
     setClickedIso(null);
+    setRegionArrow(null);
+    wrongIdsRef.current.clear();
     hoveredIsoRef.current = null;
     paintMapState(null);
   }, [paintMapState]);
@@ -1315,9 +1331,15 @@ export function WorldMapGame() {
     setFeedback(null);
     stopViewAnimation();
     setView({ x: 0, y: 0, scale: 1 });
+    wrongIdsRef.current.clear();
     hoveredIsoRef.current = null;
     paintMapState(null);
   }, [paintMapState, stopViewAnimation]);
+
+  const surrender = useCallback(() => {
+    if (loading || gameOverReason != null) return;
+    endGame("surrender");
+  }, [endGame, gameOverReason, loading]);
 
   const submitGuess = useCallback((submittedIso = guessIso) => {
     const map = mapRef.current;
@@ -1415,6 +1437,8 @@ export function WorldMapGame() {
       setGuessIso(null);
       setSearch("");
       hoveredIsoRef.current = null;
+      wrongIdsRef.current.delete(clickedIso);
+      paintMapState(clickedIso);
 
       if (nextTarget == null) {
         setClickedIso(null);
@@ -1425,6 +1449,8 @@ export function WorldMapGame() {
 
       window.setTimeout(() => setFeedback(null), 900);
     } else {
+      wrongIdsRef.current.add(clickedIso);
+      paintMapState(clickedIso);
       setPenalties((count) => count + 1);
       setFeedback("wrong");
       setGuessIso(null);
@@ -1435,6 +1461,7 @@ export function WorldMapGame() {
     clickedIso,
     guessIso,
     endGame,
+    paintMapState,
     selectCountryTarget,
     showSuccessBurst,
   ]);
@@ -2018,15 +2045,39 @@ export function WorldMapGame() {
   const resultTitle =
     gameOverReason === "time"
       ? "Time is up"
-              : "You named every region";
+      : gameOverReason === "surrender"
+        ? "Run surrendered"
+        : "You named every region";
   const resultCopy =
     gameOverReason === "win"
       ? "Clean sweep. Every available region was identified."
+      : gameOverReason === "surrender"
+        ? `You surrendered with ${score} ${
+            score === 1 ? "region" : "regions"
+          } named and ${penalties} ${
+            penalties === 1 ? "penalty" : "penalties"
+          }.`
       : `You finished with ${score} ${
           score === 1 ? "region" : "regions"
         } named and ${penalties} ${
           penalties === 1 ? "penalty" : "penalties"
         }.`;
+  const elapsedTime = GAME_DURATION_SEC - timeLeft;
+  const resultStats = [
+    { label: "Named", value: String(score) },
+    {
+      label: "Remaining",
+      value: remainingCount === null ? "..." : String(remainingCount),
+    },
+    { label: "Total", value: String(totalCountries) },
+    { label: "Progress", value: `${progressPercent}%` },
+    { label: "Penalties", value: String(penalties) },
+    { label: "Time used", value: formatTime(elapsedTime) },
+  ];
+  const guessedFlags = useMemo(
+    () => Array.from(guessed).sort().map((iso) => ({ iso })),
+    [guessed],
+  );
 
   return (
     <div className="relative flex h-full min-h-0 w-full overflow-hidden bg-[radial-gradient(circle_at_top_left,#dbeafe_0,#f8fafc_34%,#eef2ff_100%)] text-slate-950 dark:bg-[radial-gradient(circle_at_top_left,#0f172a_0,#020617_45%,#030712_100%)] dark:text-slate-50">
@@ -2172,19 +2223,29 @@ export function WorldMapGame() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-sky-600 dark:text-sky-300">
-                World quiz
+                Click Map
               </p>
               <h1 className="mt-1 text-2xl font-black tracking-tight">
                 Name the highlighted region
               </h1>
             </div>
-            <button
-              type="button"
-              onClick={restart}
-              className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-600 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/10"
-            >
-              Restart
-            </button>
+            <div className="flex shrink-0 flex-col gap-2">
+              <button
+                type="button"
+                onClick={surrender}
+                disabled={loading || over}
+                className="rounded-full border border-rose-200 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-rose-600 transition hover:border-rose-300 hover:bg-rose-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-rose-400/20 dark:text-rose-300 dark:hover:bg-rose-500/10"
+              >
+                Surrender
+              </button>
+              <button
+                type="button"
+                onClick={restart}
+                className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-slate-600 transition hover:border-sky-300 hover:bg-sky-50 hover:text-sky-700 dark:border-white/10 dark:text-slate-300 dark:hover:bg-white/10"
+              >
+                Restart
+              </button>
+            </div>
           </div>
 
           <div className="mt-4 grid grid-cols-3 gap-2">
@@ -2308,14 +2369,67 @@ export function WorldMapGame() {
                 <p className="mt-3 text-sm leading-relaxed opacity-75">
                   {resultCopy}
                 </p>
+                <div className="mt-5 grid grid-cols-2 gap-2">
+                  {resultStats.map((stat) => (
+                    <div
+                      key={stat.label}
+                      className="rounded-2xl bg-white/10 px-3 py-3 dark:bg-slate-950/8"
+                    >
+                      <p className="text-[10px] font-black uppercase tracking-[0.18em] opacity-60">
+                        {stat.label}
+                      </p>
+                      <p className="mt-1 font-mono text-xl font-black tabular-nums">
+                        {stat.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-5 rounded-2xl bg-white/10 p-3 dark:bg-slate-950/8">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] opacity-60">
+                      Guessed flags
+                    </p>
+                    <p className="text-xs font-bold opacity-60">
+                      {guessedFlags.length}
+                    </p>
+                  </div>
+                  {guessedFlags.length === 0 ? (
+                    <p className="mt-3 text-sm font-semibold opacity-70">
+                      No regions guessed yet.
+                    </p>
+                  ) : (
+                    <div className="mt-3 flex max-h-28 flex-wrap gap-2 overflow-y-auto">
+                      {guessedFlags.map(({ iso }) => {
+                        const FlagComponent =
+                          CountryFlags[iso as keyof typeof CountryFlags];
+                        return (
+                          <span
+                            key={iso}
+                            title={iso}
+                            aria-label={iso}
+                            className="flex h-7 w-10 items-center justify-center overflow-hidden rounded-sm bg-white/15 ring-1 ring-white/20"
+                          >
+                            {FlagComponent ? (
+                              <FlagComponent className="h-full w-full object-cover" />
+                            ) : (
+                              <span className="text-[10px] font-black">{iso}</span>
+                            )}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={restart}
-                className="rounded-2xl bg-sky-600 py-3.5 text-sm font-black uppercase tracking-wide text-white shadow-lg shadow-sky-600/25 transition hover:bg-sky-500 active:scale-[0.99]"
-              >
-                Play again
-              </button>
+              <div className="grid gap-3">
+                <button
+                  type="button"
+                  onClick={restart}
+                  className="rounded-2xl bg-sky-600 py-3.5 text-sm font-black uppercase tracking-wide text-white shadow-lg shadow-sky-600/25 transition hover:bg-sky-500 active:scale-[0.99]"
+                >
+                  Play again
+                </button>
+              </div>
             </div>
           ) : (
             <>
