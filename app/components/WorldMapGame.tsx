@@ -2398,7 +2398,7 @@ export function WorldMapGame() {
                       No regions guessed yet.
                     </p>
                   ) : (
-                    <div className="mt-3 flex max-h-28 flex-wrap gap-2 overflow-y-auto">
+                    <div className="mt-3 flex max-h-28 flex-wrap gap-2 overflow-y-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                       {guessedFlags.map(({ iso }) => {
                         const FlagComponent =
                           CountryFlags[iso as keyof typeof CountryFlags];
