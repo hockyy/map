@@ -42,7 +42,14 @@ type RegionTargetId =
   | "NA"
   | "EU"
   | "central-america"
+  | "northern-america"
+  | "caribbean"
+  | "northern-south-america"
+  | "andes"
+  | "southern-cone"
   | "nweu"
+  | "eastern-europe"
+  | "southern-europe"
   | "east-asia"
   | "south-east-asia"
   | "south-asia"
@@ -50,8 +57,12 @@ type RegionTargetId =
   | "west-asia"
   | "north-africa"
   | "west-africa"
+  | "central-africa"
   | "east-africa"
-  | "southern-africa";
+  | "southern-africa"
+  | "australia-new-zealand"
+  | "pacific-islands"
+  | "antarctic";
 
 type RegionTarget = {
   id: RegionTargetId;
@@ -76,25 +87,121 @@ const REGION_TARGETS: readonly RegionTarget[] = [
     isos: ["BZ", "CR", "GT", "HN", "NI", "PA", "SV"],
   },
   {
+    id: "northern-america",
+    label: "Northern America",
+    shortLabel: "N. America",
+    isos: ["BM", "CA", "GL", "MX", "PM", "US"],
+  },
+  {
+    id: "caribbean",
+    label: "Caribbean",
+    shortLabel: "Caribbean",
+    isos: [
+      "AG",
+      "AI",
+      "AW",
+      "BB",
+      "BL",
+      "BQ",
+      "BS",
+      "CU",
+      "CW",
+      "DM",
+      "DO",
+      "GD",
+      "GP",
+      "HT",
+      "JM",
+      "KN",
+      "KY",
+      "LC",
+      "MF",
+      "MQ",
+      "MS",
+      "PR",
+      "SX",
+      "TC",
+      "TT",
+      "VC",
+      "VG",
+      "VI",
+    ],
+  },
+  {
+    id: "northern-south-america",
+    label: "Northern South America",
+    shortLabel: "N. S. America",
+    isos: ["BR", "CO", "GF", "GY", "SR", "VE"],
+  },
+  {
+    id: "andes",
+    label: "Andes",
+    shortLabel: "Andes",
+    isos: ["BO", "CL", "EC", "PE"],
+  },
+  {
+    id: "southern-cone",
+    label: "Southern Cone",
+    shortLabel: "S. Cone",
+    isos: ["AR", "FK", "PY", "UY"],
+  },
+  {
     id: "nweu",
     label: "Northwest Europe",
     shortLabel: "NW Europe",
     isos: [
       "AT",
+      "AX",
       "BE",
       "CH",
       "DE",
       "DK",
       "FI",
+      "FO",
       "FR",
       "GB",
+      "GG",
       "IE",
+      "IM",
       "IS",
+      "JE",
       "LI",
       "LU",
       "NL",
       "NO",
       "SE",
+      "SJ",
+    ],
+  },
+  {
+    id: "eastern-europe",
+    label: "Eastern Europe",
+    shortLabel: "E. Europe",
+    isos: ["BG", "BY", "CZ", "EE", "HU", "LT", "LV", "MD", "PL", "RO", "RU", "SK", "UA"],
+  },
+  {
+    id: "southern-europe",
+    label: "Southern Europe",
+    shortLabel: "S. Europe",
+    isos: [
+      "AD",
+      "AL",
+      "BA",
+      "ES",
+      "GI",
+      "GR",
+      "HR",
+      "IT",
+      "MC",
+      "ME",
+      "MK",
+      "MT",
+      "PT",
+      "RS",
+      "SI",
+      "SM",
+      "VA",
+      "XK",
     ],
   },
   {
@@ -107,13 +214,13 @@ const REGION_TARGETS: readonly RegionTarget[] = [
     id: "south-east-asia",
     label: "Southeast Asia",
     shortLabel: "SE Asia",
-    isos: ["BN", "ID", "KH", "LA", "MM", "MY", "PH", "SG", "TH", "TL", "VN"],
+    isos: ["BN", "CC", "CX", "ID", "KH", "LA", "MM", "MY", "PH", "SG", "TH", "TL", "VN"],
   },
   {
     id: "south-asia",
     label: "South Asia",
     shortLabel: "South Asia",
-    isos: ["AF", "BD", "BT", "IN", "LK", "MV", "NP", "PK"],
+    isos: ["AF", "BD", "BT", "IN", "IO", "LK", "MV", "NP", "PK"],
   },
   {
     id: "central-asia",
@@ -178,6 +285,12 @@ const REGION_TARGETS: readonly RegionTarget[] = [
     ],
   },
   {
+    id: "central-africa",
+    label: "Central Africa",
+    shortLabel: "C. Africa",
+    isos: ["CD", "CF", "CG", "CM", "GA", "GQ", "ST", "TD"],
+  },
+  {
     id: "east-africa",
     label: "East Africa",
     shortLabel: "E. Africa",
@@ -209,6 +322,49 @@ const REGION_TARGETS: readonly RegionTarget[] = [
     label: "Southern Africa",
     shortLabel: "S. Africa",
     isos: ["AO", "BW", "LS", "NA", "SZ", "ZA"],
+  },
+  {
+    id: "australia-new-zealand",
+    label: "Australia and New Zealand",
+    shortLabel: "Aus/NZ",
+    isos: ["AU", "NZ"],
+  },
+  {
+    id: "pacific-islands",
+    label: "Pacific Islands",
+    shortLabel: "Pacific",
+    isos: [
+      "AS",
+      "CK",
+      "FJ",
+      "FM",
+      "GU",
+      "KI",
+      "MH",
+      "MP",
+      "NC",
+      "NF",
+      "NR",
+      "NU",
+      "PF",
+      "PG",
+      "PN",
+      "PW",
+      "SB",
+      "TK",
+      "TO",
+      "TV",
+      "UM",
+      "VU",
+      "WF",
+      "WS",
+    ],
+  },
+  {
+    id: "antarctic",
+    label: "Antarctic",
+    shortLabel: "Antarctic",
+    isos: ["AQ", "BV", "GS", "HM", "TF"],
   },
 ];
 
@@ -268,11 +424,53 @@ const REGION_THEME: Record<
     chip: "border-teal-200 bg-teal-50 dark:border-teal-500/25 dark:bg-teal-500/10",
     text: "text-teal-800 dark:text-teal-200",
   },
+  "northern-america": {
+    dot: "bg-blue-500",
+    bar: "from-blue-400 to-sky-500",
+    chip: "border-blue-200 bg-blue-50 dark:border-blue-500/25 dark:bg-blue-500/10",
+    text: "text-blue-800 dark:text-blue-200",
+  },
+  caribbean: {
+    dot: "bg-cyan-500",
+    bar: "from-cyan-400 to-teal-500",
+    chip: "border-cyan-200 bg-cyan-50 dark:border-cyan-500/25 dark:bg-cyan-500/10",
+    text: "text-cyan-800 dark:text-cyan-200",
+  },
+  "northern-south-america": {
+    dot: "bg-emerald-500",
+    bar: "from-emerald-400 to-green-500",
+    chip: "border-emerald-200 bg-emerald-50 dark:border-emerald-500/25 dark:bg-emerald-500/10",
+    text: "text-emerald-800 dark:text-emerald-200",
+  },
+  andes: {
+    dot: "bg-pink-500",
+    bar: "from-pink-400 to-fuchsia-500",
+    chip: "border-pink-200 bg-pink-50 dark:border-pink-500/25 dark:bg-pink-500/10",
+    text: "text-pink-800 dark:text-pink-200",
+  },
+  "southern-cone": {
+    dot: "bg-fuchsia-500",
+    bar: "from-fuchsia-400 to-purple-500",
+    chip: "border-fuchsia-200 bg-fuchsia-50 dark:border-fuchsia-500/25 dark:bg-fuchsia-500/10",
+    text: "text-fuchsia-800 dark:text-fuchsia-200",
+  },
   nweu: {
     dot: "bg-indigo-500",
     bar: "from-indigo-400 to-sky-500",
     chip: "border-indigo-200 bg-indigo-50 dark:border-indigo-500/25 dark:bg-indigo-500/10",
     text: "text-indigo-800 dark:text-indigo-200",
+  },
+  "eastern-europe": {
+    dot: "bg-violet-500",
+    bar: "from-violet-400 to-indigo-500",
+    chip: "border-violet-200 bg-violet-50 dark:border-violet-500/25 dark:bg-violet-500/10",
+    text: "text-violet-800 dark:text-violet-200",
+  },
+  "southern-europe": {
+    dot: "bg-purple-500",
+    bar: "from-purple-400 to-pink-500",
+    chip: "border-purple-200 bg-purple-50 dark:border-purple-500/25 dark:bg-purple-500/10",
+    text: "text-purple-800 dark:text-purple-200",
   },
   "east-asia": {
     dot: "bg-red-500",
@@ -316,6 +514,12 @@ const REGION_THEME: Record<
     chip: "border-green-200 bg-green-50 dark:border-green-500/25 dark:bg-green-500/10",
     text: "text-green-800 dark:text-green-200",
   },
+  "central-africa": {
+    dot: "bg-lime-500",
+    bar: "from-lime-400 to-green-500",
+    chip: "border-lime-200 bg-lime-50 dark:border-lime-500/25 dark:bg-lime-500/10",
+    text: "text-lime-800 dark:text-lime-200",
+  },
   "east-africa": {
     dot: "bg-sky-500",
     bar: "from-sky-400 to-cyan-500",
@@ -327,6 +531,24 @@ const REGION_THEME: Record<
     bar: "from-purple-400 to-fuchsia-500",
     chip: "border-purple-200 bg-purple-50 dark:border-purple-500/25 dark:bg-purple-500/10",
     text: "text-purple-800 dark:text-purple-200",
+  },
+  "australia-new-zealand": {
+    dot: "bg-cyan-500",
+    bar: "from-cyan-400 to-blue-500",
+    chip: "border-cyan-200 bg-cyan-50 dark:border-cyan-500/25 dark:bg-cyan-500/10",
+    text: "text-cyan-800 dark:text-cyan-200",
+  },
+  "pacific-islands": {
+    dot: "bg-sky-500",
+    bar: "from-sky-400 to-indigo-500",
+    chip: "border-sky-200 bg-sky-50 dark:border-sky-500/25 dark:bg-sky-500/10",
+    text: "text-sky-800 dark:text-sky-200",
+  },
+  antarctic: {
+    dot: "bg-slate-400",
+    bar: "from-slate-300 to-slate-500",
+    chip: "border-slate-200 bg-slate-50 dark:border-white/10 dark:bg-white/5",
+    text: "text-slate-700 dark:text-slate-200",
   },
 };
 
@@ -515,18 +737,18 @@ function getRegionProgress(
   map: SvgWorldMapApi | null,
   guessedIds: Set<string>,
 ) {
+  const progressTargets = REGION_TARGETS.filter((target) => target.isos != null);
+
   if (!map) {
-    return REGION_TARGETS.filter((target) => target.id !== "all").map(
-      (target) => ({
-        target,
-        guessed: 0,
-        total: 0,
-        percent: 0,
-      }),
-    );
+    return progressTargets.map((target) => ({
+      target,
+      guessed: 0,
+      total: 0,
+      percent: 0,
+    }));
   }
 
-  return REGION_TARGETS.filter((target) => target.id !== "all").map((target) => {
+  return progressTargets.map((target) => {
     const ids = getTargetCountryIds(map, target.id);
     const guessed = ids.filter((iso) => guessedIds.has(iso)).length;
     return {
@@ -2026,7 +2248,10 @@ export function WorldMapGame() {
   const scalePercent = Math.round(view.scale * 100);
   const currentRegion =
     clickedIso && mapApi ? getCountryRegionTarget(mapApi, clickedIso) : REGION_TARGETS[0];
-  const currentRegionTheme = REGION_THEME[currentRegion.id];
+  const currentProgressRegion = currentRegion.isos ? currentRegion : null;
+  const currentProgressRegionTheme = currentProgressRegion
+    ? REGION_THEME[currentProgressRegion.id]
+    : REGION_THEME.all;
   const regionProgress = useMemo(
     () => getRegionProgress(mapApi, guessed),
     [mapApi, guessed],
@@ -2211,6 +2436,56 @@ export function WorldMapGame() {
         </div>
       </section>
 
+      <aside className="absolute inset-y-5 left-5 z-10 hidden w-[360px] flex-col rounded-[1.75rem] border border-white/80 bg-white/90 p-4 shadow-2xl shadow-slate-900/15 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/88 lg:flex">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
+            Region progress
+          </p>
+          <p className={`text-xs font-black ${currentProgressRegionTheme.text}`}>
+            {currentProgressRegion
+              ? `Now in ${currentProgressRegion.shortLabel}`
+              : "Subregions only"}
+          </p>
+        </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {regionProgress.map(({ target, guessed: done, total, percent }) => {
+            const theme = REGION_THEME[target.id];
+            const active = target.id === currentRegion.id;
+            return (
+              <div
+                key={target.id}
+                className={`rounded-2xl border p-2.5 transition ${
+                  active
+                    ? `${theme.chip} shadow-lg shadow-slate-900/10 ring-2 ring-white/80 dark:ring-white/10`
+                    : "border-slate-200/70 bg-white/55 dark:border-white/10 dark:bg-white/3"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span
+                      className={`h-2.5 w-2.5 shrink-0 rounded-full ${theme.dot} shadow-[0_0_14px_currentColor]`}
+                    />
+                    <span className={`truncate text-xs font-black ${theme.text}`}>
+                      {target.label}
+                    </span>
+                  </div>
+                  <span className="shrink-0 text-[11px] font-bold tabular-nums text-slate-500 dark:text-slate-400">
+                    {done}/{total}
+                  </span>
+                </div>
+                <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-200/80 shadow-inner dark:bg-white/10">
+                  <div
+                    className={`h-full rounded-full bg-linear-to-r ${theme.bar} shadow-[0_0_18px_rgba(14,165,233,0.35)] transition-[width] duration-500`}
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </aside>
+
       <aside className="absolute inset-x-2 bottom-2 z-10 flex max-h-[calc(100dvh-1rem)] flex-col rounded-[1.75rem] border border-white/80 bg-white/90 shadow-2xl shadow-slate-900/15 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/88 sm:inset-x-4 sm:bottom-4 lg:inset-y-5 lg:left-auto lg:right-5 lg:max-h-none lg:w-[420px]">
         <header className="hidden shrink-0 border-b border-slate-200/70 px-5 py-4 dark:border-white/10 lg:block">
           <div className="flex items-start justify-between gap-4">
@@ -2294,55 +2569,6 @@ export function WorldMapGame() {
             </div>
           </div>
 
-          <div className="mt-4 rounded-3xl border border-slate-200/80 bg-white/70 p-3 shadow-inner shadow-white/60 dark:border-white/10 dark:bg-white/3 dark:shadow-none">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
-                Region progress
-              </p>
-              <p className={`text-xs font-black ${currentRegionTheme.text}`}>
-                {currentRegion.id === "all"
-                  ? "World route"
-                  : `Now in ${currentRegion.shortLabel}`}
-              </p>
-            </div>
-
-            <div className="mt-3 grid max-h-52 gap-2 overflow-y-auto pr-1">
-              {regionProgress.map(({ target, guessed: done, total, percent }) => {
-                const theme = REGION_THEME[target.id];
-                const active = target.id === currentRegion.id;
-                return (
-                  <div
-                    key={target.id}
-                    className={`rounded-2xl border p-2.5 transition ${
-                      active
-                        ? `${theme.chip} shadow-lg shadow-slate-900/10 ring-2 ring-white/80 dark:ring-white/10`
-                        : "border-slate-200/70 bg-white/55 dark:border-white/10 dark:bg-white/3"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span
-                          className={`h-2.5 w-2.5 shrink-0 rounded-full ${theme.dot} shadow-[0_0_14px_currentColor]`}
-                        />
-                        <span className={`truncate text-xs font-black ${theme.text}`}>
-                          {target.label}
-                        </span>
-                      </div>
-                      <span className="shrink-0 text-[11px] font-bold tabular-nums text-slate-500 dark:text-slate-400">
-                        {done}/{total}
-                      </span>
-                    </div>
-                    <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-200/80 shadow-inner dark:bg-white/10">
-                      <div
-                        className={`h-full rounded-full bg-linear-to-r ${theme.bar} shadow-[0_0_18px_rgba(14,165,233,0.35)] transition-[width] duration-500`}
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
         </header>
 
         <div className="flex flex-col px-3 py-3 sm:px-4 sm:py-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:px-5">
@@ -2498,7 +2724,7 @@ export function WorldMapGame() {
               <ul
                 role="listbox"
                 aria-label="Regions not yet guessed"
-                className="mt-3 hidden min-h-[132px] flex-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/5 lg:block"
+                className="mt-3 hidden max-h-56 overflow-y-auto rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/5 lg:block"
               >
                 {filteredOptions.length === 0 ? (
                   <li className="px-4 py-8 text-center text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -2536,6 +2762,7 @@ export function WorldMapGame() {
                   Not a match for the highlighted region.
                 </p>
               )}
+
             </form>
           )}
         </div>
