@@ -72,7 +72,7 @@ type RegionTarget = {
   isos?: readonly string[];
 };
 
-const REGION_TARGETS: readonly RegionTarget[] = [
+export const REGION_TARGETS: readonly RegionTarget[] = [
   { id: "all", label: "World", shortLabel: "World" },
   { id: "AS", label: "Asia", shortLabel: "Asia", region: "AS" },
   { id: "OC", label: "Oceania", shortLabel: "Oceania", region: "OC" },
