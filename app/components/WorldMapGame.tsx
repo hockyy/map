@@ -961,7 +961,6 @@ export function WorldMapGame() {
   const [guessed, setGuessed] = useState<Set<string>>(() => new Set());
   const [mapApi, setMapApi] = useState<SvgWorldMapApi | null>(null);
   const [clickedIso, setClickedIso] = useState<string | null>(null);
-  const [guessIso, setGuessIso] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
   const [view, setView] = useState<View>({ x: 0, y: 0, scale: 1 });
@@ -1038,6 +1037,7 @@ export function WorldMapGame() {
       .sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name))
       .map(({ iso, name }) => ({ iso, name }));
   }, [playableIds, search, mapApi]);
+  const mobileOptions = useMemo(() => filteredOptions.slice(0, 3), [filteredOptions]);
 
   const paintMapState = useCallback((selectedIso: string | null) => {
     const map = mapRef.current;
@@ -1304,7 +1304,6 @@ export function WorldMapGame() {
           : null,
       });
       setClickedIso(iso);
-      setGuessIso(null);
       setSearch("");
       hoveredIsoRef.current = null;
       paintMapState(iso);
@@ -1326,7 +1325,6 @@ export function WorldMapGame() {
     setGameOverReason(null);
     setGuessed(new Set());
     setClickedIso(null);
-    setGuessIso(null);
     setSearch("");
     setFeedback(null);
     stopViewAnimation();
@@ -1341,7 +1339,7 @@ export function WorldMapGame() {
     endGame("surrender");
   }, [endGame, gameOverReason, loading]);
 
-  const submitGuess = useCallback((submittedIso = guessIso) => {
+  const submitGuess = useCallback((submittedIso: string | null) => {
     const map = mapRef.current;
     if (gameStateRef.current.ended || !map) return;
     if (!clickedIso || !submittedIso) return;
@@ -1434,7 +1432,6 @@ export function WorldMapGame() {
       showSuccessBurst(clickedIso);
       setScore((s) => s + 1);
       setFeedback("correct");
-      setGuessIso(null);
       setSearch("");
       hoveredIsoRef.current = null;
       wrongIdsRef.current.delete(clickedIso);
@@ -1453,18 +1450,23 @@ export function WorldMapGame() {
       paintMapState(clickedIso);
       setPenalties((count) => count + 1);
       setFeedback("wrong");
-      setGuessIso(null);
       setSearch("");
       window.setTimeout(() => setFeedback(null), 1200);
     }
   }, [
     clickedIso,
-    guessIso,
     endGame,
     paintMapState,
     selectCountryTarget,
     showSuccessBurst,
   ]);
+
+  const submitTopOption = useCallback(() => {
+    const topOption = filteredOptions[0];
+    if (!topOption) return false;
+    submitGuess(topOption.iso);
+    return true;
+  }, [filteredOptions, submitGuess]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -1473,10 +1475,9 @@ export function WorldMapGame() {
       }
 
       if (e.key === "Enter") {
-        const topOption = filteredOptions[0];
-        if (!topOption) return;
+        if (isTextEntryTarget(e.target)) return;
+        if (!submitTopOption()) return;
         e.preventDefault();
-        submitGuess(topOption.iso);
         return;
       }
 
@@ -1485,23 +1486,20 @@ export function WorldMapGame() {
       if (e.key.length === 1) {
         e.preventDefault();
         searchInputRef.current?.focus();
-        setGuessIso(null);
         setSearch((prev) => prev + e.key);
       } else if (e.key === "Backspace" && search.length > 0) {
         e.preventDefault();
         searchInputRef.current?.focus();
-        setGuessIso(null);
         setSearch((prev) => prev.slice(0, -1));
       } else if (e.key === "Escape" && search.length > 0) {
         e.preventDefault();
-        setGuessIso(null);
         setSearch("");
       }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [filteredOptions, gameOverReason, loading, search.length, submitGuess]);
+  }, [gameOverReason, loading, search.length, submitTopOption]);
 
   const zoomByFactor = useCallback((factor: number, centerX: number, centerY: number) => {
     stopViewAnimation();
@@ -2023,9 +2021,6 @@ export function WorldMapGame() {
 
   const over = gameOverReason != null;
 
-  const canSubmit =
-    !over && !loading && clickedIso != null && guessIso != null;
-
   const remainingCount = mapApi === null ? null : playableIds.length;
 
   const scalePercent = Math.round(view.scale * 100);
@@ -2040,8 +2035,6 @@ export function WorldMapGame() {
     mapApi === null ? 0 : score + (remainingCount === null ? 0 : remainingCount);
   const progressPercent =
     totalCountries === 0 ? 0 : Math.round((score / totalCountries) * 100);
-  const selectedGuessName =
-    guessIso && mapApi ? mapApi.countryData[guessIso]?.name ?? guessIso : null;
   const resultTitle =
     gameOverReason === "time"
       ? "Time is up"
@@ -2218,8 +2211,8 @@ export function WorldMapGame() {
         </div>
       </section>
 
-      <aside className="absolute inset-x-2 bottom-2 z-10 flex max-h-[58vh] flex-col rounded-[1.75rem] border border-white/80 bg-white/90 shadow-2xl shadow-slate-900/15 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/88 sm:inset-x-4 sm:bottom-4 lg:inset-y-5 lg:left-auto lg:right-5 lg:max-h-none lg:w-[420px]">
-        <header className="shrink-0 border-b border-slate-200/70 px-5 py-4 dark:border-white/10">
+      <aside className="absolute inset-x-2 bottom-2 z-10 flex max-h-[calc(100dvh-1rem)] flex-col rounded-[1.75rem] border border-white/80 bg-white/90 shadow-2xl shadow-slate-900/15 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/88 sm:inset-x-4 sm:bottom-4 lg:inset-y-5 lg:left-auto lg:right-5 lg:max-h-none lg:w-[420px]">
+        <header className="hidden shrink-0 border-b border-slate-200/70 px-5 py-4 dark:border-white/10 lg:block">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-sky-600 dark:text-sky-300">
@@ -2352,7 +2345,7 @@ export function WorldMapGame() {
           </div>
         </header>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-4">
+        <div className="flex flex-col px-3 py-3 sm:px-4 sm:py-4 lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:px-5">
           {error ? (
             <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
               {error}
@@ -2432,8 +2425,14 @@ export function WorldMapGame() {
               </div>
             </div>
           ) : (
-            <>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 dark:border-white/10 dark:bg-white/5">
+            <form
+              className="contents"
+              onSubmit={(e) => {
+                e.preventDefault();
+                submitTopOption();
+              }}
+            >
+              <div className="hidden rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 dark:border-white/10 dark:bg-white/5 lg:block">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
                   Current target
                 </p>
@@ -2446,7 +2445,7 @@ export function WorldMapGame() {
 
               <label
                 htmlFor="country-search"
-                className="mt-4 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400"
+                className="hidden text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 lg:mt-4 lg:block"
               >
                 Answer
               </label>
@@ -2457,23 +2456,49 @@ export function WorldMapGame() {
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
-                  setGuessIso(null);
                 }}
                 placeholder="Start typing anywhere..."
                 autoComplete="off"
-                className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-950 outline-none ring-sky-500/20 transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-500"
+                aria-label="Answer"
+                enterKeyHint="done"
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-950 outline-none ring-sky-500/20 transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-500 lg:mt-2"
               />
 
-              {selectedGuessName && (
-                <p className="mt-2 text-xs font-semibold text-sky-700 dark:text-sky-300">
-                  Selected: {selectedGuessName}
-                </p>
-              )}
+              <ul
+                role="listbox"
+                aria-label="Top country matches"
+                className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/5 lg:hidden"
+              >
+                {mobileOptions.length === 0 ? (
+                  <li className="px-4 py-3 text-center text-sm font-medium text-slate-500 dark:text-slate-400">
+                    {playableIds.length === 0
+                      ? "Nothing left to guess."
+                      : "No matches. Try another search."}
+                  </li>
+                ) : (
+                  mobileOptions.map(({ iso, name }) => (
+                    <li key={iso} className="border-t border-slate-100 first:border-t-0 dark:border-white/10">
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={false}
+                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-semibold text-slate-800 transition active:bg-sky-100 dark:text-slate-200 dark:active:bg-white/10"
+                        onClick={() => submitGuess(iso)}
+                      >
+                        <span className="truncate">{name}</span>
+                        <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-white/10 dark:text-slate-400">
+                          {iso}
+                        </span>
+                      </button>
+                    </li>
+                  ))
+                )}
+              </ul>
 
               <ul
                 role="listbox"
                 aria-label="Regions not yet guessed"
-                className="mt-3 min-h-[132px] flex-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/5"
+                className="mt-3 hidden min-h-[132px] flex-1 overflow-y-auto rounded-2xl border border-slate-200 bg-white dark:border-white/10 dark:bg-white/5 lg:block"
               >
                 {filteredOptions.length === 0 ? (
                   <li className="px-4 py-8 text-center text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -2487,16 +2512,9 @@ export function WorldMapGame() {
                       <button
                         type="button"
                         role="option"
-                        aria-selected={guessIso === iso}
-                        className={`flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm transition hover:bg-sky-50 dark:hover:bg-white/10 ${
-                          guessIso === iso
-                            ? "bg-sky-100 font-bold text-sky-950 dark:bg-sky-500/20 dark:text-sky-100"
-                            : "text-slate-800 dark:text-slate-200"
-                        }`}
-                        onClick={() => {
-                          setGuessIso(iso);
-                          setSearch(name);
-                        }}
+                        aria-selected={false}
+                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm text-slate-800 transition hover:bg-sky-50 active:bg-sky-100 dark:text-slate-200 dark:hover:bg-white/10"
+                        onClick={() => submitGuess(iso)}
                       >
                         <span>{name}</span>
                         <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500 dark:bg-white/10 dark:text-slate-400">
@@ -2508,26 +2526,17 @@ export function WorldMapGame() {
                 )}
               </ul>
 
-              <button
-                type="button"
-                disabled={!canSubmit}
-                onClick={() => submitGuess()}
-                className="mt-4 rounded-2xl bg-slate-950 py-3.5 text-sm font-black uppercase tracking-wide text-white shadow-lg shadow-slate-950/20 transition hover:bg-slate-800 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-35 dark:bg-sky-500 dark:text-slate-950 dark:hover:bg-sky-400"
-              >
-                Submit answer
-              </button>
-
               {feedback === "correct" && (
-                <p className="mt-3 rounded-2xl bg-emerald-50 px-4 py-3 text-center text-sm font-bold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-200">
+                <p className="mt-3 hidden rounded-2xl bg-emerald-50 px-4 py-3 text-center text-sm font-bold text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-200 lg:block">
                   Correct. That region is cleared.
                 </p>
               )}
               {feedback === "wrong" && (
-                <p className="mt-3 rounded-2xl bg-rose-50 px-4 py-3 text-center text-sm font-bold text-rose-700 dark:bg-rose-950/30 dark:text-rose-200">
+                <p className="mt-3 hidden rounded-2xl bg-rose-50 px-4 py-3 text-center text-sm font-bold text-rose-700 dark:bg-rose-950/30 dark:text-rose-200 lg:block">
                   Not a match for the highlighted region.
                 </p>
               )}
-            </>
+            </form>
           )}
         </div>
       </aside>
